@@ -9,11 +9,20 @@ class letterCounter:
 			self.letterMap[l] = 1
 
 	def mostCommon(self):
-		max = 0
+		return self.calcOccurence(True)
+
+	def leastCommon(self):
+		return self.calcOccurence(False)
+
+	def calcOccurence(self, most=True):
+		extremum = 0 if most else 100000
 		letter = "-"
 		for l in self.letterMap:
-			if self.letterMap[l] > max:
-				max = self.letterMap[l]
+			check = self.letterMap[l] > extremum
+			if not most:
+				check = self.letterMap[l] < extremum
+			if check:
+				extremum = self.letterMap[l]
 				letter = l
 		return letter
 
@@ -30,5 +39,5 @@ with open("input.txt", "r") as f:
 
 	output = ""
 	for c in counters:
-		output += c.mostCommon()
+		output += c.leastCommon()
 	print output
