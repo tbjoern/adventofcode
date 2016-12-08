@@ -5,7 +5,8 @@ def compare(a,b):
 	if res == 0:
 		return -1*cmp(a,b)
 	return res
-	
+
+validshit = []	
 
 with open("input.txt", "r") as f:
     for line in f:
@@ -38,7 +39,24 @@ with open("input.txt", "r") as f:
     			matches = False
 
     	if matches:
-    		output += secid
-    		print str(checksum[0:4]) + " " + str(lettercount[0:4])
+    		validshit.append((letters, secid))
 
-print output
+def blazeit(weed, dabs):
+	dabs = dabs %26
+	geileVariable = ord(weed) - ord('a')
+	geileVariable += dabs
+	geileVariable = geileVariable % 26
+	geileVariable += ord('a')
+	return chr(geileVariable)
+
+def machgeil(swag):
+	blingbling = ""
+	for stoff in swag[0]:
+		if stoff == "-":
+			blingbling += " "
+		else:
+			blingbling += blazeit(stoff,swag[1])
+	return blingbling
+
+for swag in validshit:
+	print machgeil(swag) + " " + str(swag[1])
