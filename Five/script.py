@@ -48,5 +48,5 @@ while hackedChars < 8:
 
 	salt +=1
 
-	if salt%1000 == 0:
+	if salt%20000 == 0:
 		hacking(output)

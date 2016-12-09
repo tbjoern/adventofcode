@@ -1,3 +1,6 @@
+import sys
+import time
+
 class display:
 	def __init__(self,width,height):
 		# store pixels in rows (screen has height many lists that are width long)
@@ -51,7 +54,13 @@ class display:
 					count += 1
 		return count
 
+	def clear(self):
+		for row in self.screen:
+			sys.stdout.write("\033[F") #back to previous line
+			sys.stdout.write("\033[K") #clear line
+
 d = display(50,6)
+d.render()
 
 with open("input.txt", "r") as f:
 	for line in f:
@@ -67,6 +76,8 @@ with open("input.txt", "r") as f:
 				d.shiftRow(index,amount)
 			elif axis == "column":
 				d.shiftColumn(index, amount)
+		d.clear()
+		d.render()
+		time.sleep(.14)
 
-d.render()
 print d.countLights()
