@@ -1,7 +1,8 @@
 import copy
 import Queue
+import cProfile
 
-allStates = []
+allStates = {}
 
 def beenThereDoneThat(bf):
 	h = bf.genHash()
@@ -28,15 +29,13 @@ def equal(bf1,bf2):
 	return False
 
 class bruteforce:
-	def __init__(self,gens, chips, elevator,steps,parent):
+	def __init__(self,gens, chips, elevator,steps):
 		# belegung : Pr, Co, Cu, R, Pl
 		self.generators = gens
 		self.chips = chips
 		self.elevator = elevator
-		self.nextStates = []
 		self.constructs = len(gens)
 		self.steps = steps
-		self.parent = parent
 
 	def itemsOnFloor(self, floor):
 		gens = 0
@@ -56,14 +55,13 @@ class bruteforce:
 		#print "chips: " + str(self.chips)
 		#print "elevator: " + str(self.elevator)
 
-		hasGen = [False,False,False,False]
-		for i in range(0,4):
-			if self.floorHasGenerator(i+1):
-				hasGen[i] = True
+		hasGen = self.floorsHaveGenerators()
 
 		#print hasGen
 		for i in range(0,self.constructs):
-			if hasGen[self.chips[i] - 1] and self.chips[i] != self.generators[i]:
+			if self.chips[i] == self.generators[i]:
+				continue
+			if hasGen[self.chips[i] - 1]:
 				#print i
 				return False
 
@@ -78,12 +76,16 @@ class bruteforce:
 			if self.chips[i] == self.elevator:
 				elements.append((i,"chip"))
 		for i in range(0,len(elements)):
-			moves.append((elements[i], None, 1))
-			moves.append((elements[i], None, -1))
+			if self.elevator != 4:
+				moves.append((elements[i], None, 1))
+			if self.elevator != 1:
+				moves.append((elements[i], None, -1))
 			for j in range(i+1, len(elements)):
 				if (elements[i][1] != elements[j][1] and elements[i][0] == elements[j][0]) or elements[i][1] == elements[j][1]:
-					moves.append((elements[i], elements[j], 1))
-					moves.append((elements[i], elements[j], -1))
+					if self.elevator != 4:
+						moves.append((elements[i], elements[j], 1))
+					if self.elevator != 1:
+						moves.append((elements[i], elements[j], -1))
 		return moves
 
 	def isFinal(self):
@@ -95,11 +97,12 @@ class bruteforce:
 	def createCopy(self):
 		gens = copy.copy(self.generators)
 		mcs = copy.copy(self.chips)
-		return bruteforce(gens,mcs, self.elevator,self.steps,self)
+		return bruteforce(gens,mcs, self.elevator,self.steps)
 
 	# builds next solution nodes
 	# returns True if one of them has the final state, false otherwise
 	def buildNextStates(self):
+		nextStates = []
 		moves = self.getPossibleMoves()
 		b = self.createCopy()
 		b.steps += 1
@@ -117,8 +120,8 @@ class bruteforce:
 					b.chips[second[0]] += mod
 			b.elevator += mod
 			if b.isValid() and not beenThereDoneThat(b):
-				self.nextStates.append(b)
-				allStates.append(b.genHash())
+				nextStates.append(b)
+				allStates[b.genHash()] = True
 				b = self.createCopy()
 				b.steps += 1
 			else:
@@ -133,14 +136,17 @@ class bruteforce:
 						b.chips[second[0]] -= mod
 				b.elevator -= mod
 
-		for n in self.nextStates:
+		for n in nextStates:
 			if n.isFinal():
-				return n.steps
+				return (n.steps,nextStates)
 
-		return -1
+		return (-1,nextStates)
 
-	def floorHasGenerator(self,floor):
-		return floor in self.generators
+	def floorsHaveGenerators(self):
+		floors = [False,False,False,False]
+		for gen in self.generators:
+			floors[gen - 1] = True
+		return floors
 
 	def render(self):
 		print "gens: " + str(self.generators)
@@ -150,21 +156,24 @@ class bruteforce:
 	def genHash(self):
 		return hash((str(self.generators), str(self.chips), self.elevator))
 
-b = bruteforce([1,2,2,2,2,1,1],[1,3,3,3,3,1,1], 1, 0, None)
-allStates.append(b)
+def main():
+	b = bruteforce([1,2,2,2,2,1,1],[1,3,3,3,3,1,1], 1, 0)
+	allStates[b.genHash()] = True
 
-q = Queue.Queue()
-q.put(b)
-totalsteps = -1
-cur_steps = 0
-while(not q.empty() and totalsteps == -1):
-	item = q.get()
-	#item.render()
-	totalsteps = item.buildNextStates()
-	for it in item.nextStates:
-		q.put(it)
-	#print "next states: " + str(len(item.nextStates)) + " steps: " + str(item.steps)
-	if item.steps > cur_steps:
-		cur_steps = item.steps
-		print "cur step: " + str(cur_steps) + " queue size: " + str(q.qsize())
-print totalsteps
+	q = Queue.Queue()
+	q.put(b)
+	totalsteps = -1
+	cur_steps = 0
+	while(not q.empty() and totalsteps == -1):
+		item = q.get()
+		#item.render()
+		totalsteps, nextStates = item.buildNextStates()
+		for it in nextStates:
+			q.put(it)
+		#print "next states: " + str(len(item.nextStates)) + " steps: " + str(item.steps)
+		if item.steps > cur_steps:
+			cur_steps = item.steps
+			print "cur step: " + str(cur_steps) + " queue size: " + str(q.qsize())
+	print totalsteps
+
+cProfile.run('main()')
