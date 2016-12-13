@@ -8,6 +8,7 @@ def beenThereDoneThat(bf):
 	h = bf.genHash()
 	if h in allStates:
 		return True
+	allStates[h] = True
 	return False
 
 
@@ -121,7 +122,6 @@ class bruteforce:
 			b.elevator += mod
 			if b.isValid() and not beenThereDoneThat(b):
 				nextStates.append(b)
-				allStates[b.genHash()] = True
 				b = self.createCopy()
 				b.steps += 1
 			else:
@@ -154,7 +154,11 @@ class bruteforce:
 		print "elevator: " + str(self.elevator)
 
 	def genHash(self):
-		return hash((str(self.generators), str(self.chips), self.elevator))
+		pairs = []
+		for i in range(0,self.constructs):
+			pairs.append((self.generators[i], self.chips[i]))
+		pairs.sort()
+		return hash((str(pairs), self.elevator))
 
 def main():
 	b = bruteforce([1,2,2,2,2,1,1],[1,3,3,3,3,1,1], 1, 0)
