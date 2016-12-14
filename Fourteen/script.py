@@ -1,4 +1,5 @@
 import hashlib
+<<<<<<< HEAD
 import re
 import sys
 
