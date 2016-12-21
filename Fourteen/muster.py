@@ -1,60 +1,56 @@
-import md5
-import re
+from collections import defaultdict
+from hashlib     import md5
 
-myinput = "yjdafjpo%d"
 
-reg = re.compile(r"(\w)\1\1")
+def main():
 
-part2 = False
+   data = "yjdafjpo"
 
-def myhash(xx):
-    iters = 1
-    if part2:
-        iters = 2017
-    for i in range(iters):
-        n = md5.new()
-        n.update(xx)
-        xx = n.hexdigest()
-    return xx
 
-future = {}
-nkeys = 0
-def generate():
-    global nkeys
-    i = -1
-    while True:
-        i += 1
+   idx = 0
 
-        if i not in future:
-            d = myhash(myinput % i)
-        else:
-            d = future[i]
-            del future[i]
+   hashes = []
+   threes = defaultdict(list)
 
-        ma = reg.findall(d)
-        if not ma:
-            continue
+   while not (len(hashes) > 64 and (idx - hashes[-1][0]) > 1000):
+      value = md5("%s%s" % (data, idx)).hexdigest()
+      for _ in xrange(2016):
+         value = md5(value).hexdigest()
 
-        pat = ma[0] * 5
-        for j in range(i + 1, i + 1001):
-            if j not in future:
-                d2 = myhash(myinput % j)
-                future[j] = d2
-            else:
-                d2 = future[j]
+      match = matchesFive(value)
 
-            if pat in d2:
-                nkeys += 1
-                print "key", nkeys, "index", i, "5-idx", j, "digest", d, "digest2", d2
-                if nkeys == 64:
-                    print "===>", i
-                    return
-                yield d
-                break
+      if match is not None:
+         for (m_idx, value) in threes[match]:
+            if (idx - m_idx) <= 1000:
+               hashes.append((m_idx, value))
+               print "Found hash:", m_idx
+         hashes.sort()
+         threes[match] = []
 
-for _ in generate():
-    pass
-part2 = True
-nkeys = 0
-for _ in generate():
-    pass
+      match = matchesThree(value)
+
+      if match is not None:
+         threes[match].append((idx, value))
+
+      idx += 1
+
+   print len(hashes)
+   print "Last hash:", hashes[63]
+
+
+
+def matchesThree(value):
+   for idx in xrange(len(value) - 2):
+      if len({value[idx + i] for i in xrange(3)}) == 1:
+         return value[idx]
+   return None
+
+def matchesFive(value):
+   for idx in xrange(len(value) - 4):
+      if len({value[idx + i] for i in xrange(5)}) == 1:
+         return value[idx]
+   return None
+
+
+if __name__ == "__main__":
+   main()

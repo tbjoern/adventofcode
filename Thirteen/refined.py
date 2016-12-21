@@ -86,7 +86,7 @@ while not q.empty():
 				if not pre[adjField[0]][adjField[1]] and not lab[adjField[0]][adjField[1]]:
 					pre[adjField[0]][adjField[1]] = field
 					q.put(adjField)
-	skip = renderStep(skip,6)
+	skip = renderStep(skip,1)
 
 if not pre[1][1] or not pre[31][39]:
 	print "There is no path here"
@@ -100,7 +100,7 @@ u = (31,39)
 while u != (1,1):
 	shortestPath.append(u)
 	u = pre[u[0]][u[1]]
-	skip = renderStep(skip,3)
+	skip = renderStep(skip,1)
 
 clear()
 render(lab)
