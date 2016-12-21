@@ -17,9 +17,9 @@ keys2 = []
 lastIndex = 0
 
 while len(keys) < 64:
-	h = hashlib.md5(salt + hex(index)).hexdigest()
+	h = hashlib.md5(salt + str(index)).hexdigest()
 
-	hits = re.findall(r"([a-z0-9])\1{2}", h)
+	hits = re.findall(r"(.)\1{2}", h)
 	for match in hits:
 		candidates.append((match, index, h))
 
@@ -32,7 +32,8 @@ while len(keys) < 64:
 				if not c in keys:
 					keys[c] = h
 					keys2.append((c,h))
-		elif c[1] < index - 1000:
+	for c in candidates:
+		if c[1] < index - 1000:
 			candidates.remove(c)
 
 	index += 1
