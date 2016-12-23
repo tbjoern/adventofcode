@@ -1,0 +1,8 @@
+cpy a b
+dec b
+mult b a
+dec b
+cpy b c
+dec c
+jnz c -4
+add 9025 a
