@@ -17,7 +17,7 @@ class node:
 	def empty(self):
 		return self.used == 0
 
-with open("input.txt") as f:
+with open("test.txt") as f:
 	skip = 0
 	for line in f:
 		if skip < 2:
